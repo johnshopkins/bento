@@ -1,0 +1,80 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+        "<up><wait><tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `ks_path`}}<enter>"
+      ],
+      "boot_wait": "5s",
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{user `disk_size`}}",
+      "guest_os_type": "rhel",
+      "http_directory": "{{user `http_directory`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "iso/{{user `iso_name`}}",
+      "memory": "{{ user `memory` }}",
+      "output_directory": "{{ user `build_directory` }}/packer-{{user `template`}}-parallels",
+      "parallels_tools_flavor": "lin",
+      "prlctl_version_file": ".prlctl_version",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "10000s",
+      "ssh_username": "vagrant",
+      "type": "parallels-iso",
+      "vm_name": "{{ user `template` }}"
+    }
+  ],
+  "post-processors": [
+    {
+      "output": "{{ user `build_directory` }}/{{user `box_basename`}}.{{.Provider}}.box",
+      "type": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "environment_vars": [
+        "HOME_DIR=/home/vagrant",
+        "http_proxy={{user `http_proxy`}}",
+        "https_proxy={{user `https_proxy`}}",
+        "no_proxy={{user `no_proxy`}}"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+      "expect_disconnect": true,
+      "scripts": [
+        "{{template_dir}}/../centos/scripts/networking.sh",
+        "{{template_dir}}/../_common/motd.sh",
+        "{{template_dir}}/../_common/sshd.sh",
+        "{{template_dir}}/../_common/vagrant.sh",
+        "{{template_dir}}/../_common/virtualbox.sh",
+        "{{template_dir}}/../_common/vmware.sh",
+        "{{template_dir}}/../_common/parallels.sh",
+        "{{template_dir}}/../centos/scripts/cleanup.sh",
+        "{{template_dir}}/../_common/minimize.sh"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "arch": "64",
+    "box_basename": "rhel-9.0-beta",
+    "build_directory": "../../builds",
+    "build_timestamp": "{{isotime \"20060102150405\"}}",
+    "cpus": "2",
+    "disk_size": "65536",
+    "git_revision": "__unknown_git_revision__",
+    "guest_additions_url": "",
+    "headless": "false",
+    "http_directory": "{{template_dir}}/../centos/http",
+    "http_proxy": "{{env `http_proxy`}}",
+    "https_proxy": "{{env `https_proxy`}}",
+    "iso_checksum": "fb4cf70a48918e359a53dd4a8be8cb37adae7d9f51a83a76b3d79d97c40a1a15",
+    "iso_name": "rhel-9.0-beta-0-aarch64-boot.iso",
+    "ks_path": "9/ks.cfg",
+    "memory": "1024",
+    "name": "rhel-9.0-beta",
+    "no_proxy": "{{env `no_proxy`}}",
+    "qemu_display": "none",
+    "template": "rhel-9.0-aarch64",
+    "version": "TIMESTAMP"
+  }
+}
